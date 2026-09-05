@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ventas vs Compras por RIM — Top Neumáticos</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1216; --panel:#171B21; --border:#2A313C;
+    --text:#E7EAEE; --text-dim:#8B95A5; --accent:#4FA8D8; --error:#E1554F;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:'IBM Plex Sans',sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px;
+    padding:36px 32px; max-width:420px; width:100%; text-align:center;
+  }
+  h1{ font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:600; margin-bottom:8px; }
+  p.sub{ color:var(--text-dim); font-size:13.5px; margin-bottom:24px; }
+  .field{ text-align:left; margin-bottom:14px; }
+  .field label{ font-size:12px; color:var(--text-dim); display:block; margin-bottom:6px; }
+  .field input[type="password"]{
+    width:100%; background:#20262F; border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; color:var(--text); font-size:13.5px;
+  }
+  .field input[type="password"]:focus{ outline:none; border-color:var(--accent); }
+  .remember{ display:flex; align-items:center; gap:8px; margin-bottom:20px; font-size:12.5px; color:var(--text-dim); }
+  button{
+    width:100%; background:var(--accent); color:#0F1216; border:none; border-radius:10px;
+    padding:13px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit;
+  }
+  button:disabled{ opacity:0.6; cursor:not-allowed; }
+  button:hover:not(:disabled){ filter:brightness(1.08); }
+  .status{ margin-top:16px; font-size:12.5px; color:var(--text-dim); min-height:18px; }
+  .status.error{ color:var(--error); }
+  .spinner{
+    display:inline-block; width:14px; height:14px; border:2px solid var(--panel);
+    border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite;
+    vertical-align:middle; margin-right:6px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Ventas vs Compras por RIM</h1>
+  <p class="sub">Top Neumáticos S.R.L. — generación on-demand</p>
+
+  <button id="btnGenerar">Generar reporte</button>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+const WEBHOOK_URL = 'https://envy-recollect-last.ngrok-free.dev/webhook/rim';
+
+const btn = document.getElementById('btnGenerar');
+const statusEl = document.getElementById('status');
+
+btn.addEventListener('click', async () => {
+  btn.disabled = true;
+  statusEl.classList.remove('error');
+  statusEl.innerHTML = '<span class="spinner"></span>Generando reporte, puede tardar unos segundos...';
+
+  try {
+    const response = await fetch(WEBHOOK_URL, { method: 'GET' });
+
+    if (!response.ok) {
+      throw new Error('El servidor respondió con estado ' + response.status);
+    }
+
+    const html = await response.text();
+
+    // Abre el reporte en una pestaña nueva, reemplazando su contenido con el HTML recibido
+    const nuevaVentana = window.open('', '_blank');
+    if (!nuevaVentana) {
+      throw new Error('El navegador bloqueó la ventana emergente. Habilitá pop-ups para este sitio.');
+    }
+    nuevaVentana.document.open();
+    nuevaVentana.document.write(html);
+    nuevaVentana.document.close();
+
+    statusEl.textContent = 'Reporte generado correctamente.';
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+    statusEl.classList.add('error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
