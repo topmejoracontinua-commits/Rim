@@ -78,16 +78,11 @@ btn.addEventListener('click', async () => {
 
     const html = await response.text();
 
-    // Abre el reporte en una pestaña nueva, reemplazando su contenido con el HTML recibido
-    const nuevaVentana = window.open('', '_blank');
-    if (!nuevaVentana) {
-      throw new Error('El navegador bloqueó la ventana emergente. Habilitá pop-ups para este sitio.');
-    }
-    nuevaVentana.document.open();
-    nuevaVentana.document.write(html);
-    nuevaVentana.document.close();
-
-    statusEl.textContent = 'Reporte generado correctamente.';
+    // Reemplaza el documento actual con el reporte (evita bloqueos de pop-up en mobile)
+    document.open();
+    document.write(html);
+    document.close();
+    return;
   } catch (err) {
     statusEl.textContent = 'Error: ' + err.message;
     statusEl.classList.add('error');
