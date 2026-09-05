@@ -67,7 +67,10 @@ btn.addEventListener('click', async () => {
   statusEl.innerHTML = '<span class="spinner"></span>Generando reporte, puede tardar unos segundos...';
 
   try {
-    const response = await fetch(WEBHOOK_URL, { method: 'GET' });
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'GET',
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
 
     if (!response.ok) {
       throw new Error('El servidor respondió con estado ' + response.status);
